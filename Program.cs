@@ -6,8 +6,6 @@ var str = TypeDescriptor.GetConverter<Person>().ConvertFromString(person);
 Console.WriteLine(str);
 
 class TypeDescriptor {
-    static HashSet<Type> knownTypes = new();
-
     public static TypeConverter GetConverter<T>() where T : IMetadataProvider<T> {
         return new StronglyTypedConverter<T>(T.GetMetadata());
     }
@@ -87,7 +85,6 @@ class PersonTypeMetadata : ITypeMetadata<Person> {
         public Func<Person, Data> Getter => p => p.Data;
     }
 }
-
 class StringTypeMetadata : ITypeMetadata<string> {
     public string Name => "string";
     public IEnumerable<IPropertyMetadata<string>> Properties => new List<IPropertyMetadata<string>>();
@@ -126,7 +123,6 @@ interface IPropertyMetadata<TType> {
 }
 
 interface IPropertyMetadata<TType, TPropertyType> : IPropertyMetadata<TType> {
-    
     Func<TType, TPropertyType> Getter { get; }
     ITypeMetadata<TPropertyType> Type { get; }
     void IPropertyMetadata<TType>.Accept(IVisitor visitor, TType value) => visitor.Visit(this, value);
