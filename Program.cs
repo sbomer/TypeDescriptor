@@ -2,7 +2,7 @@
 using System.Text;
 
 var person = new Person("John", 30, new Data(1));
-var str = TypeDescriptor.GetConverter<Person>().ConvertFromString(person);
+var str = TypeDescriptor.GetConverter<Person>().ConvertToString(person);
 Console.WriteLine(str);
 
 class TypeDescriptor {
@@ -12,7 +12,7 @@ class TypeDescriptor {
 }
 
 abstract class TypeConverter {
-    public abstract string ConvertFromString(object value);
+    public abstract string ConvertToString(object value);
 }
 
 class StronglyTypedConverter<T> : TypeConverter {
@@ -52,7 +52,7 @@ class StronglyTypedConverter<T> : TypeConverter {
     ITypeMetadata<T> metadata;
     public StronglyTypedConverter(ITypeMetadata<T> metadata) => this.metadata = metadata;
 
-    public override string ConvertFromString(object value)
+    public override string ConvertToString(object value)
     {
         metadata.Accept(visitor, (T)value);
         return visitor.sb.ToString();
