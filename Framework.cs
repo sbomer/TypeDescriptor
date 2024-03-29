@@ -2,39 +2,35 @@ using System;
 using System.Text;
 
 namespace Framework;
-interface ITypeDescriptor<T> {
+interface ITypeDescriptor {
     public abstract string Name { get; }
-    public abstract IEnumerable<IPropertyDescriptor<T>> Properties { get; }
-    public virtual void Accept(IVisitor visitor, T value) => visitor.Visit(this, value);
+    public abstract IEnumerable<IPropertyDescriptor> Properties { get; }
+    public virtual void Accept(IVisitor visitor, object value) => visitor.Visit(this, value);
 }
 
-interface IPropertyDescriptor<TType> {
+interface IPropertyDescriptor {
     string Name { get; }  
-    void Accept(IVisitor visitor, TType value);
-}
-
-interface IPropertyDescriptor<TType, TPropertyType> : IPropertyDescriptor<TType> {
-    Func<TType, TPropertyType> Getter { get; }
-    ITypeDescriptor<TPropertyType> Type { get; }
-    void IPropertyDescriptor<TType>.Accept(IVisitor visitor, TType value) => visitor.Visit(this, value);
+    void Accept(IVisitor visitor, object value) => visitor.Visit(this, value);
+    Func<object, object> Getter { get; }
+    ITypeDescriptor Type { get; }
 }
 
 // Primitive type descriptors
-class StringTypeDescriptor : ITypeDescriptor<string> {
+class StringTypeDescriptor : ITypeDescriptor {
     public string Name => "string";
-    public IEnumerable<IPropertyDescriptor<string>> Properties => new List<IPropertyDescriptor<string>>();
+    public IEnumerable<IPropertyDescriptor> Properties => new List<IPropertyDescriptor>();
 }
-class IntTypeDescriptor : ITypeDescriptor<int> {
+class IntTypeDescriptor : ITypeDescriptor {
     public string Name => "int";
-    public IEnumerable<IPropertyDescriptor<int>> Properties => new List<IPropertyDescriptor<int>>();
+    public IEnumerable<IPropertyDescriptor> Properties => new List<IPropertyDescriptor>();
 }
 
 interface ITypeDescriptionProvider<T> {
-    public virtual static ITypeDescriptor<T> GetTypeDescriptor() => new EmptyCustomTypeDescriptor();
+    public virtual static ITypeDescriptor GetTypeDescriptor() => new EmptyCustomTypeDescriptor();
 
-    private sealed class EmptyCustomTypeDescriptor : ITypeDescriptor<T> {
+    private sealed class EmptyCustomTypeDescriptor : ITypeDescriptor {
         public string Name => typeof(T).Name;
-        public IEnumerable<IPropertyDescriptor<T>> Properties => new List<IPropertyDescriptor<T>>();
+    public IEnumerable<IPropertyDescriptor> Properties => new List<IPropertyDescriptor>();
     }
 }
 
@@ -49,7 +45,7 @@ class StronglyTypedConverter<T> : TypeConverter {
     {
         public StringBuilder sb = new();
         int indent = 0;
-        public void Visit<TType>(ITypeDescriptor<TType> typeMetadata, TType value)
+        public void Visit(ITypeDescriptor typeMetadata, object value)
         {
             var properties = typeMetadata.Properties;
             if (properties.Count() == 0) {
@@ -69,7 +65,7 @@ class StronglyTypedConverter<T> : TypeConverter {
 
         }
 
-        public void Visit<TType, TPropertyType>(IPropertyDescriptor<TType, TPropertyType> propertyMetadata, TType value)
+        public void Visit(IPropertyDescriptor propertyMetadata, object value)
         {
             sb.Append(new string(' ', indent * 2) + propertyMetadata.Name + ": ");
             var v = propertyMetadata.Getter(value);
@@ -78,8 +74,8 @@ class StronglyTypedConverter<T> : TypeConverter {
     }
 
     StronglyTypedVisitor visitor = new();
-    ITypeDescriptor<T> metadata;
-    public StronglyTypedConverter(ITypeDescriptor<T> metadata) => this.metadata = metadata;
+    ITypeDescriptor metadata;
+    public StronglyTypedConverter(ITypeDescriptor metadata) => this.metadata = metadata;
 
     public override string ConvertToString(object value)
     {
@@ -93,6 +89,6 @@ abstract class TypeConverter {
 }
 
 interface IVisitor {
-    void Visit<TType>(ITypeDescriptor<TType> typeMetadata, TType value);
-    void Visit<TType, TPropertyType>(IPropertyDescriptor<TType, TPropertyType> propertyMetadata, TType value);
+    void Visit(ITypeDescriptor typeMetadata, object value);
+    void Visit(IPropertyDescriptor propertyMetadata, object value);
 }

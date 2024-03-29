@@ -3,46 +3,46 @@ using DataModel;
 
 namespace DataModel {
     partial record class Person : ITypeDescriptionProvider<Person> {
-        public static ITypeDescriptor<Person> GetTypeDescriptor() => new PersonTypeDescriptor();
+        public static ITypeDescriptor GetTypeDescriptor() => new PersonTypeDescriptor();
     }
 }
 
-class PersonTypeDescriptor : ITypeDescriptor<Person> {
+class PersonTypeDescriptor : ITypeDescriptor {
     public string Name => "Person";
-    public IEnumerable<IPropertyDescriptor<Person>> Properties => new List<IPropertyDescriptor<Person>> {
+    public IEnumerable<IPropertyDescriptor> Properties => new List<IPropertyDescriptor> {
         new NameMetadata(),
         new AgeMetadata(),
         new DataMetadata()
     };
 
-    class NameMetadata : IPropertyDescriptor<Person, string> {
+    class NameMetadata : IPropertyDescriptor {
         public string Name => "Name";
-        public ITypeDescriptor<string> Type => new StringTypeDescriptor();
-        public Func<Person, string> Getter => p => p.Name;
+        public ITypeDescriptor Type => new StringTypeDescriptor();
+        public Func<object, object> Getter => p => ((Person) p).Name;
     }
 
-    class AgeMetadata : IPropertyDescriptor<Person, int> {
+    class AgeMetadata : IPropertyDescriptor {
         public string Name => "Age";
-        public  ITypeDescriptor<int> Type => new IntTypeDescriptor();
-        public Func<Person, int> Getter => p => p.Age;
+        public  ITypeDescriptor Type => new IntTypeDescriptor();
+        public Func<object, object> Getter => p => ((Person) p).Age;
     }
 
-    class DataMetadata : IPropertyDescriptor<Person, Data> {
+    class DataMetadata : IPropertyDescriptor {
         public string Name => "Data";
-        public ITypeDescriptor<Data> Type => new DataTypeDescriptor();
-        public Func<Person, Data> Getter => p => p.Data;
+        public ITypeDescriptor Type => new DataTypeDescriptor();
+        public Func<object, object> Getter => p => ((Person) p).Data;
     }
 }
 
-class DataTypeDescriptor : ITypeDescriptor<Data> {
+class DataTypeDescriptor : ITypeDescriptor {
     public string Name => "Data";
-    public IEnumerable<IPropertyDescriptor<Data>> Properties => new List<IPropertyDescriptor<Data>> {
+    public IEnumerable<IPropertyDescriptor> Properties => new List<IPropertyDescriptor> {
         new IdMetadata()
     };
 
-    class IdMetadata : IPropertyDescriptor<Data, int> {
+    class IdMetadata : IPropertyDescriptor {
         public string Name => "Id";
-        public ITypeDescriptor<int> Type => new IntTypeDescriptor();
-        public Func<Data, int> Getter => d => d.Id;
+        public ITypeDescriptor Type => new IntTypeDescriptor();
+        public Func<object, object> Getter => d => ((Data) d).Id;
     }
 }
