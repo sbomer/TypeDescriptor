@@ -6,6 +6,7 @@ namespace Framework;
 interface ICustomTypeDescriptor {
     string GetClassName();
     PropertyDescriptorCollection Properties { get; }
+    TypeConverter GetConverter();
 }
 
 abstract class PropertyDescriptor {
@@ -39,25 +40,39 @@ class PropertyDescriptorCollection : ICollection {
 class StringTypeDescriptor : ICustomTypeDescriptor {
     public string GetClassName() => "string";
     public PropertyDescriptorCollection Properties => new([]);
+    public TypeConverter GetConverter() => new StronglyTypedConverter<string>(this);
 }
 class IntTypeDescriptor : ICustomTypeDescriptor {
     public string GetClassName() => "int";
     public PropertyDescriptorCollection Properties => new([]);
+    public TypeConverter GetConverter() => new StronglyTypedConverter<int>(this);
 }
 
-interface ITypeDescriptionProvider<T> {
-    public virtual static ICustomTypeDescriptor GetTypeDescriptor() => new EmptyCustomTypeDescriptor();
-
-    private sealed class EmptyCustomTypeDescriptor : ICustomTypeDescriptor {
-        public string GetClassName() => typeof(T).Name;
-    public PropertyDescriptorCollection Properties => new([]);
-    }
+abstract class TypeDescriptionProvider {
+    public virtual ICustomTypeDescriptor GetTypeDescriptor() => new EmptyCustomTypeDescriptor();
 }
 
 class TypeDescriptor {
-    public static TypeConverter GetConverter<T>() where T : ITypeDescriptionProvider<T> {
-        return new StronglyTypedConverter<T>(T.GetTypeDescriptor());
+    public static TypeConverter GetConverter(Type type) => GetDescriptor(type).GetConverter();
+
+    static Dictionary<Type, TypeDescriptionProvider> providers = new();
+
+    public static void AddProvider(TypeDescriptionProvider provider, Type type) {
+        providers[type] = provider;
     }
+
+    private static ICustomTypeDescriptor GetDescriptor(Type type) {
+        if (providers.TryGetValue(type, out var provider))
+            return provider.GetTypeDescriptor();
+        // Fall back on empty descriptor, not reflection-based descriptor.
+        return new EmptyCustomTypeDescriptor();
+    }
+}
+
+internal sealed class EmptyCustomTypeDescriptor : ICustomTypeDescriptor {
+    public string GetClassName() => null!;
+    public PropertyDescriptorCollection Properties => new([]);
+    public TypeConverter GetConverter() => new StronglyTypedConverter<object>(null!);
 }
 
 class StronglyTypedConverter<T> : TypeConverter {
@@ -104,6 +119,6 @@ class StronglyTypedConverter<T> : TypeConverter {
     }
 }
 
-abstract class TypeConverter {
-    public abstract string ConvertToString(object value);
+class TypeConverter {
+    public virtual string ConvertToString(object value) => value.ToString()!;
 }

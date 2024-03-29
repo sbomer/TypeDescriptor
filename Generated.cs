@@ -2,7 +2,7 @@ using Framework;
 using DataModel;
 
 namespace DataModel {
-    partial record class Person : ITypeDescriptionProvider<Person> {
+    partial record class Person {
         public static ICustomTypeDescriptor GetTypeDescriptor() => new PersonTypeDescriptor();
     }
 }
@@ -14,6 +14,7 @@ class PersonTypeDescriptor : ICustomTypeDescriptor {
         new AgeMetadata(),
         new DataMetadata()
     ]);
+    public TypeConverter GetConverter() => new StronglyTypedConverter<Person>(this);
 
     class NameMetadata : PropertyDescriptor {
         public override string Name => "Name";
@@ -39,6 +40,7 @@ class DataTypeDescriptor : ICustomTypeDescriptor {
     public PropertyDescriptorCollection Properties => new([
         new IdMetadata()
     ]);
+    public TypeConverter GetConverter() => new StronglyTypedConverter<Data>(this);
     class IdMetadata : PropertyDescriptor {
         public override string Name => "Id";
         public override ICustomTypeDescriptor Type => new IntTypeDescriptor();
