@@ -1,36 +1,58 @@
 using System;
+using System.Collections;
 using System.Text;
 
 namespace Framework;
-interface ITypeDescriptor {
-    public abstract string Name { get; }
-    public abstract IEnumerable<IPropertyDescriptor> Properties { get; }
-    public virtual void Accept(IVisitor visitor, object value) => visitor.Visit(this, value);
+interface ICustomTypeDescriptor {
+    string GetClassName();
+    PropertyDescriptorCollection Properties { get; }
+    virtual void Accept(IVisitor visitor, object value) => visitor.Visit(this, value);
 }
 
 interface IPropertyDescriptor {
     string Name { get; }  
     void Accept(IVisitor visitor, object value) => visitor.Visit(this, value);
     Func<object, object> Getter { get; }
-    ITypeDescriptor Type { get; }
+    ICustomTypeDescriptor Type { get; }
+}
+
+class PropertyDescriptorCollection : ICollection {
+    private IPropertyDescriptor[] properties;
+    public int Count { get; private set; }
+    public PropertyDescriptorCollection(IPropertyDescriptor[] properties) {
+        this.properties = properties;
+        Count = properties.Length;
+    }
+    // ICollection implementation
+    public void CopyTo(Array array, int index)
+    {
+        Array.Copy(properties, 0, array, index, Count);
+    }
+    bool ICollection.IsSynchronized => false;
+    object ICollection.SyncRoot => null!;
+    // IEnumerable implementation
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+    IEnumerator GetEnumerator() {
+        return properties.GetEnumerator();
+    }
 }
 
 // Primitive type descriptors
-class StringTypeDescriptor : ITypeDescriptor {
-    public string Name => "string";
-    public IEnumerable<IPropertyDescriptor> Properties => new List<IPropertyDescriptor>();
+class StringTypeDescriptor : ICustomTypeDescriptor {
+    public string GetClassName() => "string";
+    public PropertyDescriptorCollection Properties => new([]);
 }
-class IntTypeDescriptor : ITypeDescriptor {
-    public string Name => "int";
-    public IEnumerable<IPropertyDescriptor> Properties => new List<IPropertyDescriptor>();
+class IntTypeDescriptor : ICustomTypeDescriptor {
+    public string GetClassName() => "int";
+    public PropertyDescriptorCollection Properties => new([]);
 }
 
 interface ITypeDescriptionProvider<T> {
-    public virtual static ITypeDescriptor GetTypeDescriptor() => new EmptyCustomTypeDescriptor();
+    public virtual static ICustomTypeDescriptor GetTypeDescriptor() => new EmptyCustomTypeDescriptor();
 
-    private sealed class EmptyCustomTypeDescriptor : ITypeDescriptor {
-        public string Name => typeof(T).Name;
-    public IEnumerable<IPropertyDescriptor> Properties => new List<IPropertyDescriptor>();
+    private sealed class EmptyCustomTypeDescriptor : ICustomTypeDescriptor {
+        public string GetClassName() => typeof(T).Name;
+    public PropertyDescriptorCollection Properties => new([]);
     }
 }
 
@@ -45,21 +67,21 @@ class StronglyTypedConverter<T> : TypeConverter {
     {
         public StringBuilder sb = new();
         int indent = 0;
-        public void Visit(ITypeDescriptor typeMetadata, object value)
+        public void Visit(ICustomTypeDescriptor typeMetadata, object value)
         {
             var properties = typeMetadata.Properties;
-            if (properties.Count() == 0) {
+            if (properties.Count == 0) {
                 if (value is null) {
                     sb.AppendLine("null");
                     return;
                 }
-                sb.AppendLine(value.ToString() + " (" + typeMetadata.Name + ")");
+                sb.AppendLine(value.ToString() + " (" + typeMetadata.GetClassName() + ")");
                 return;
             }
             
-            sb.AppendLine(typeMetadata.Name);
+            sb.AppendLine(typeMetadata.GetClassName());
             indent++;
-            foreach (var prop in properties)
+            foreach (IPropertyDescriptor prop in properties)
                 prop.Accept(this, value);
             indent--;
 
@@ -74,8 +96,8 @@ class StronglyTypedConverter<T> : TypeConverter {
     }
 
     StronglyTypedVisitor visitor = new();
-    ITypeDescriptor metadata;
-    public StronglyTypedConverter(ITypeDescriptor metadata) => this.metadata = metadata;
+    ICustomTypeDescriptor metadata;
+    public StronglyTypedConverter(ICustomTypeDescriptor metadata) => this.metadata = metadata;
 
     public override string ConvertToString(object value)
     {
@@ -89,6 +111,6 @@ abstract class TypeConverter {
 }
 
 interface IVisitor {
-    void Visit(ITypeDescriptor typeMetadata, object value);
+    void Visit(ICustomTypeDescriptor typeMetadata, object value);
     void Visit(IPropertyDescriptor propertyMetadata, object value);
 }
