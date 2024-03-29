@@ -6,12 +6,10 @@ namespace Framework;
 interface ICustomTypeDescriptor {
     string GetClassName();
     PropertyDescriptorCollection Properties { get; }
-    virtual void Accept(IVisitor visitor, object value) => visitor.Visit(this, value);
 }
 
 interface IPropertyDescriptor {
     string Name { get; }  
-    void Accept(IVisitor visitor, object value) => visitor.Visit(this, value);
     Func<object, object> Getter { get; }
     ICustomTypeDescriptor Type { get; }
 }
@@ -63,7 +61,7 @@ class TypeDescriptor {
 }
 
 class StronglyTypedConverter<T> : TypeConverter {
-    class StronglyTypedVisitor : IVisitor
+    class StronglyTypedVisitor
     {
         public StringBuilder sb = new();
         int indent = 0;
@@ -82,7 +80,7 @@ class StronglyTypedConverter<T> : TypeConverter {
             sb.AppendLine(typeMetadata.GetClassName());
             indent++;
             foreach (IPropertyDescriptor prop in properties)
-                prop.Accept(this, value);
+                Visit(prop, value);
             indent--;
 
         }
@@ -91,7 +89,7 @@ class StronglyTypedConverter<T> : TypeConverter {
         {
             sb.Append(new string(' ', indent * 2) + propertyMetadata.Name + ": ");
             var v = propertyMetadata.Getter(value);
-            propertyMetadata.Type.Accept(this, v);
+            Visit(propertyMetadata.Type, v);
         }
     }
 
@@ -101,16 +99,11 @@ class StronglyTypedConverter<T> : TypeConverter {
 
     public override string ConvertToString(object value)
     {
-        metadata.Accept(visitor, (T)value);
+        visitor.Visit(metadata, value);
         return visitor.sb.ToString();
     }
 }
 
 abstract class TypeConverter {
     public abstract string ConvertToString(object value);
-}
-
-interface IVisitor {
-    void Visit(ICustomTypeDescriptor typeMetadata, object value);
-    void Visit(IPropertyDescriptor propertyMetadata, object value);
 }
