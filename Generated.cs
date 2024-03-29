@@ -1,12 +1,6 @@
 using Framework;
 using DataModel;
 
-namespace DataModel {
-    partial record class Person {
-        public static ICustomTypeDescriptor GetTypeDescriptor() => new PersonTypeDescriptor();
-    }
-}
-
 class PersonTypeDescriptor : ICustomTypeDescriptor {
     public string GetClassName() => "Person";
     public PropertyDescriptorCollection Properties => new([
