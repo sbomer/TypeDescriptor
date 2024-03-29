@@ -40,12 +40,12 @@ class PropertyDescriptorCollection : ICollection {
 class StringTypeDescriptor : ICustomTypeDescriptor {
     public string GetClassName() => "string";
     public PropertyDescriptorCollection Properties => new([]);
-    public TypeConverter GetConverter() => new StronglyTypedConverter<string>(this);
+    public TypeConverter GetConverter() => new StronglyTypedConverter(this);
 }
 class IntTypeDescriptor : ICustomTypeDescriptor {
     public string GetClassName() => "int";
     public PropertyDescriptorCollection Properties => new([]);
-    public TypeConverter GetConverter() => new StronglyTypedConverter<int>(this);
+    public TypeConverter GetConverter() => new StronglyTypedConverter(this);
 }
 
 abstract class TypeDescriptionProvider {
@@ -72,10 +72,10 @@ class TypeDescriptor {
 internal sealed class EmptyCustomTypeDescriptor : ICustomTypeDescriptor {
     public string GetClassName() => null!;
     public PropertyDescriptorCollection Properties => new([]);
-    public TypeConverter GetConverter() => new StronglyTypedConverter<object>(null!);
+    public TypeConverter GetConverter() => new StronglyTypedConverter(null!);
 }
 
-class StronglyTypedConverter<T> : TypeConverter {
+class StronglyTypedConverter : TypeConverter {
     class StronglyTypedVisitor
     {
         public StringBuilder sb = new();

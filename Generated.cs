@@ -14,7 +14,7 @@ class PersonTypeDescriptor : ICustomTypeDescriptor {
         new AgeMetadata(),
         new DataMetadata()
     ]);
-    public TypeConverter GetConverter() => new StronglyTypedConverter<Person>(this);
+    public TypeConverter GetConverter() => new StronglyTypedConverter(this);
 
     class NameMetadata : PropertyDescriptor {
         public override string Name => "Name";
@@ -40,7 +40,7 @@ class DataTypeDescriptor : ICustomTypeDescriptor {
     public PropertyDescriptorCollection Properties => new([
         new IdMetadata()
     ]);
-    public TypeConverter GetConverter() => new StronglyTypedConverter<Data>(this);
+    public TypeConverter GetConverter() => new StronglyTypedConverter(this);
     class IdMetadata : PropertyDescriptor {
         public override string Name => "Id";
         public override ICustomTypeDescriptor PropertyType => new IntTypeDescriptor();
