@@ -15,22 +15,22 @@ class PersonTypeDescriptor : ICustomTypeDescriptor {
         new DataMetadata()
     ]);
 
-    class NameMetadata : IPropertyDescriptor {
-        public string Name => "Name";
-        public ICustomTypeDescriptor Type => new StringTypeDescriptor();
-        public Func<object, object> Getter => p => ((Person) p).Name;
+    class NameMetadata : PropertyDescriptor {
+        public override string Name => "Name";
+        public override ICustomTypeDescriptor Type => new StringTypeDescriptor();
+        public override Func<object, object> Getter => p => ((Person) p).Name;
     }
 
-    class AgeMetadata : IPropertyDescriptor {
-        public string Name => "Age";
-        public  ICustomTypeDescriptor Type => new IntTypeDescriptor();
-        public Func<object, object> Getter => p => ((Person) p).Age;
+    class AgeMetadata : PropertyDescriptor {
+        public override string Name => "Age";
+        public override ICustomTypeDescriptor Type => new IntTypeDescriptor();
+        public override Func<object, object> Getter => p => ((Person) p).Age;
     }
 
-    class DataMetadata : IPropertyDescriptor {
-        public string Name => "Data";
-        public ICustomTypeDescriptor Type => new DataTypeDescriptor();
-        public Func<object, object> Getter => p => ((Person) p).Data;
+    class DataMetadata : PropertyDescriptor {
+        public override string Name => "Data";
+        public override ICustomTypeDescriptor Type => new DataTypeDescriptor();
+        public override Func<object, object> Getter => p => ((Person) p).Data;
     }
 }
 
@@ -39,9 +39,9 @@ class DataTypeDescriptor : ICustomTypeDescriptor {
     public PropertyDescriptorCollection Properties => new([
         new IdMetadata()
     ]);
-    class IdMetadata : IPropertyDescriptor {
-        public string Name => "Id";
-        public ICustomTypeDescriptor Type => new IntTypeDescriptor();
-        public Func<object, object> Getter => d => ((Data) d).Id;
+    class IdMetadata : PropertyDescriptor {
+        public override string Name => "Id";
+        public override ICustomTypeDescriptor Type => new IntTypeDescriptor();
+        public override Func<object, object> Getter => d => ((Data) d).Id;
     }
 }

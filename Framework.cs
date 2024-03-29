@@ -8,16 +8,16 @@ interface ICustomTypeDescriptor {
     PropertyDescriptorCollection Properties { get; }
 }
 
-interface IPropertyDescriptor {
-    string Name { get; }  
-    Func<object, object> Getter { get; }
-    ICustomTypeDescriptor Type { get; }
+abstract class PropertyDescriptor {
+    public abstract string Name { get; } 
+    public abstract Func<object, object> Getter { get; }
+    public abstract ICustomTypeDescriptor Type { get; }
 }
 
 class PropertyDescriptorCollection : ICollection {
-    private IPropertyDescriptor[] properties;
+    private PropertyDescriptor[] properties;
     public int Count { get; private set; }
-    public PropertyDescriptorCollection(IPropertyDescriptor[] properties) {
+    public PropertyDescriptorCollection(PropertyDescriptor[] properties) {
         this.properties = properties;
         Count = properties.Length;
     }
@@ -79,13 +79,13 @@ class StronglyTypedConverter<T> : TypeConverter {
             
             sb.AppendLine(typeMetadata.GetClassName());
             indent++;
-            foreach (IPropertyDescriptor prop in properties)
+            foreach (PropertyDescriptor prop in properties)
                 Visit(prop, value);
             indent--;
 
         }
 
-        public void Visit(IPropertyDescriptor propertyMetadata, object value)
+        public void Visit(PropertyDescriptor propertyMetadata, object value)
         {
             sb.Append(new string(' ', indent * 2) + propertyMetadata.Name + ": ");
             var v = propertyMetadata.Getter(value);
