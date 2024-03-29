@@ -18,19 +18,19 @@ class PersonTypeDescriptor : ICustomTypeDescriptor {
     class NameMetadata : PropertyDescriptor {
         public override string Name => "Name";
         public override ICustomTypeDescriptor Type => new StringTypeDescriptor();
-        public override Func<object, object> Getter => p => ((Person) p).Name;
+        public override object GetValue(object instance) => ((Person) instance).Name;
     }
 
     class AgeMetadata : PropertyDescriptor {
         public override string Name => "Age";
         public override ICustomTypeDescriptor Type => new IntTypeDescriptor();
-        public override Func<object, object> Getter => p => ((Person) p).Age;
+        public override object GetValue(object instance) => ((Person) instance).Age;
     }
 
     class DataMetadata : PropertyDescriptor {
         public override string Name => "Data";
         public override ICustomTypeDescriptor Type => new DataTypeDescriptor();
-        public override Func<object, object> Getter => p => ((Person) p).Data;
+        public override object GetValue(object instance) => ((Person) instance).Data;
     }
 }
 
@@ -42,6 +42,6 @@ class DataTypeDescriptor : ICustomTypeDescriptor {
     class IdMetadata : PropertyDescriptor {
         public override string Name => "Id";
         public override ICustomTypeDescriptor Type => new IntTypeDescriptor();
-        public override Func<object, object> Getter => d => ((Data) d).Id;
+        public override object GetValue(object instance) => ((Data) instance).Id;
     }
 }

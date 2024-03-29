@@ -10,7 +10,7 @@ interface ICustomTypeDescriptor {
 
 abstract class PropertyDescriptor {
     public abstract string Name { get; } 
-    public abstract Func<object, object> Getter { get; }
+    public abstract object GetValue(object instance);
     public abstract ICustomTypeDescriptor Type { get; }
 }
 
@@ -85,11 +85,11 @@ class StronglyTypedConverter<T> : TypeConverter {
 
         }
 
-        public void Visit(PropertyDescriptor propertyMetadata, object value)
+        public void Visit(PropertyDescriptor propertyMetadata, object instance)
         {
             sb.Append(new string(' ', indent * 2) + propertyMetadata.Name + ": ");
-            var v = propertyMetadata.Getter(value);
-            Visit(propertyMetadata.Type, v);
+            var value = propertyMetadata.GetValue(instance);
+            Visit(propertyMetadata.Type, value);
         }
     }
 
