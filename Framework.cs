@@ -40,12 +40,12 @@ class PropertyDescriptorCollection : ICollection {
 class StringTypeDescriptor : ICustomTypeDescriptor {
     public string GetClassName() => "string";
     public PropertyDescriptorCollection Properties => new([]);
-    public TypeConverter GetConverter() => new StronglyTypedConverter(this);
+    public TypeConverter GetConverter() => new TypeDescriptorVisitorConverter(this);
 }
 class IntTypeDescriptor : ICustomTypeDescriptor {
     public string GetClassName() => "int";
     public PropertyDescriptorCollection Properties => new([]);
-    public TypeConverter GetConverter() => new StronglyTypedConverter(this);
+    public TypeConverter GetConverter() => new TypeDescriptorVisitorConverter(this);
 }
 
 abstract class TypeDescriptionProvider {
@@ -72,50 +72,46 @@ class TypeDescriptor {
 internal sealed class EmptyCustomTypeDescriptor : ICustomTypeDescriptor {
     public string GetClassName() => null!;
     public PropertyDescriptorCollection Properties => new([]);
-    public TypeConverter GetConverter() => new StronglyTypedConverter(null!);
+    public TypeConverter GetConverter() => new TypeDescriptorVisitorConverter(null!);
 }
 
-class StronglyTypedConverter : TypeConverter {
-    class StronglyTypedVisitor
+class TypeDescriptorVisitorConverter : TypeConverter {
+    public StringBuilder sb = new();
+    int indent = 0;
+    void Visit(ICustomTypeDescriptor typeMetadata, object value)
     {
-        public StringBuilder sb = new();
-        int indent = 0;
-        public void Visit(ICustomTypeDescriptor typeMetadata, object value)
-        {
-            var properties = typeMetadata.Properties;
-            if (properties.Count == 0) {
-                if (value is null) {
-                    sb.AppendLine("null");
-                    return;
-                }
-                sb.AppendLine(value.ToString() + " (" + typeMetadata.GetClassName() + ")");
+        var properties = typeMetadata.Properties;
+        if (properties.Count == 0) {
+            if (value is null) {
+                sb.AppendLine("null");
                 return;
             }
-            
-            sb.AppendLine(typeMetadata.GetClassName());
-            indent++;
-            foreach (PropertyDescriptor prop in properties)
-                Visit(prop, value);
-            indent--;
-
+            sb.AppendLine(value.ToString() + " (" + typeMetadata.GetClassName() + ")");
+            return;
         }
+        
+        sb.AppendLine(typeMetadata.GetClassName());
+        indent++;
+        foreach (PropertyDescriptor prop in properties)
+            Visit(prop, value);
+        indent--;
 
-        public void Visit(PropertyDescriptor propertyMetadata, object instance)
-        {
-            sb.Append(new string(' ', indent * 2) + propertyMetadata.Name + ": ");
-            var value = propertyMetadata.GetValue(instance);
-            Visit(propertyMetadata.PropertyType, value);
-        }
     }
 
-    StronglyTypedVisitor visitor = new();
+    void Visit(PropertyDescriptor propertyMetadata, object instance)
+    {
+        sb.Append(new string(' ', indent * 2) + propertyMetadata.Name + ": ");
+        var value = propertyMetadata.GetValue(instance);
+        Visit(propertyMetadata.PropertyType, value);
+    }
+
     ICustomTypeDescriptor metadata;
-    public StronglyTypedConverter(ICustomTypeDescriptor metadata) => this.metadata = metadata;
+    public TypeDescriptorVisitorConverter(ICustomTypeDescriptor metadata) => this.metadata = metadata;
 
     public override string ConvertToString(object value)
     {
-        visitor.Visit(metadata, value);
-        return visitor.sb.ToString();
+        Visit(metadata, value);
+        return sb.ToString();
     }
 }
 
