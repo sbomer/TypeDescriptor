@@ -12,7 +12,8 @@ interface ICustomTypeDescriptor {
 abstract class PropertyDescriptor {
     public abstract string Name { get; } 
     public abstract object GetValue(object instance);
-    public abstract ICustomTypeDescriptor PropertyType { get; }
+    // public abstract ICustomTypeDescriptor PropertyType { get; }
+    public abstract Type PropertyType { get; }
 }
 
 class PropertyDescriptorCollection : ICollection {
@@ -92,8 +93,8 @@ class TypeDescriptorVisitorConverter : TypeConverter {
         
         sb.AppendLine(typeMetadata.GetClassName());
         indent++;
-        foreach (PropertyDescriptor prop in properties)
-            Visit(prop, value);
+        // foreach (PropertyDescriptor prop in properties)
+        //     Visit(prop, value);
         indent--;
 
     }
@@ -102,7 +103,7 @@ class TypeDescriptorVisitorConverter : TypeConverter {
     {
         sb.Append(new string(' ', indent * 2) + propertyMetadata.Name + ": ");
         var value = propertyMetadata.GetValue(instance);
-        Visit(propertyMetadata.PropertyType, value);
+        // Visit(propertyMetadata.PropertyType, value);
     }
 
     ICustomTypeDescriptor metadata;

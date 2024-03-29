@@ -18,19 +18,22 @@ class PersonTypeDescriptor : ICustomTypeDescriptor {
 
     class NameMetadata : PropertyDescriptor {
         public override string Name => "Name";
-        public override ICustomTypeDescriptor PropertyType => new StringTypeDescriptor();
+        // public override ICustomTypeDescriptor PropertyType => new StringTypeDescriptor();
+        public override Type PropertyType => typeof(string);
         public override object GetValue(object instance) => ((Person) instance).Name;
     }
 
     class AgeMetadata : PropertyDescriptor {
         public override string Name => "Age";
-        public override ICustomTypeDescriptor PropertyType => new IntTypeDescriptor();
+        // public override ICustomTypeDescriptor PropertyType => new IntTypeDescriptor();
+        public override Type PropertyType => typeof(int);
         public override object GetValue(object instance) => ((Person) instance).Age;
     }
 
     class DataMetadata : PropertyDescriptor {
         public override string Name => "Data";
-        public override ICustomTypeDescriptor PropertyType => new DataTypeDescriptor();
+        // public override ICustomTypeDescriptor PropertyType => new DataTypeDescriptor();
+        public override Type PropertyType => typeof(Data);
         public override object GetValue(object instance) => ((Person) instance).Data;
     }
 }
@@ -43,7 +46,8 @@ class DataTypeDescriptor : ICustomTypeDescriptor {
     public TypeConverter GetConverter() => new TypeDescriptorVisitorConverter(this);
     class IdMetadata : PropertyDescriptor {
         public override string Name => "Id";
-        public override ICustomTypeDescriptor PropertyType => new IntTypeDescriptor();
+        // public override ICustomTypeDescriptor PropertyType => new IntTypeDescriptor();
+        public override Type PropertyType => typeof(int);
         public override object GetValue(object instance) => ((Data) instance).Id;
     }
 }
